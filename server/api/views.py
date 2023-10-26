@@ -1,8 +1,12 @@
 from django.shortcuts import render
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from .models import Post, Category, Comment, Tag
+from rest_framework import status
 
+
+from .models import Post, Category, Comment, Tag
+from rest_framework import serializers
+from .serlializers import PostSerializer
 # Create your views here.
 
 
@@ -23,3 +27,17 @@ def ApiOverview(request):
     }
 
     return Response(api_urls)
+
+
+@api_view(['POST'])
+def add_post(request):
+    post = PostSerializer(data=request.data)
+
+    if Post.objects.filter(**request.data).exists():
+        raise serializers.ValidationError("This Post already exists")
+
+    if post.is_valid():
+        post.save()
+        return Response(post.data)
+    else:
+        return Response(status=status.HTTP_404_NOT_FOUND)
