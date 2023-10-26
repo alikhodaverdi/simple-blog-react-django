@@ -2,7 +2,10 @@ from django.shortcuts import render
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-
+import io
+from rest_framework.parsers import JSONParser
+from rest_framework.renderers import JSONRenderer
+from django.http.response import HttpResponse
 
 from .models import Post, Category, Comment, Tag
 from rest_framework import serializers
@@ -29,15 +32,24 @@ def ApiOverview(request):
     return Response(api_urls)
 
 
+# create post
 @api_view(['POST'])
 def add_post(request):
-    post = PostSerializer(data=request.data)
+    jdata = request.body
+    stream = io.BytesIO(jdata)
+    pydata = JSONParser().parse(stream)
+    serializer = PostSerializer(data=pydata)
+    if serializer.is_valid():
+        serializer.save()
+        res = {'msg': 'Data is created'}
+        jdata = JSONRenderer().render(res)
+        return HttpResponse(jdata, content_type='application/json')
+    # If not valid
+    jdata = JSONRenderer().render(serializer.errors)
+    return HttpResponse(jdata, content_type='application/json')
 
-    if Post.objects.filter(**request.data).exists():
-        raise serializers.ValidationError("This Post already exists")
 
-    if post.is_valid():
-        post.save()
-        return Response(post.data)
-    else:
-        return Response(status=status.HTTP_404_NOT_FOUND)
+# get single post
+@api_view(['GET'])
+def get_post_by_id(reques):
+    pass

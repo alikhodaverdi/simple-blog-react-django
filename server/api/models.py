@@ -17,7 +17,7 @@ class Tag(models.Model):
 
 class Category(models.Model):
     id = models.IntegerField(primary_key=True)
-    parentId = models.BigIntegerField(max_length=20)
+    parentId = models.BigIntegerField()
     title = models.CharField(max_length=150, blank=False)
     metaTitle = models.CharField(blank=True, max_length=50)
     slug = models.CharField(blank=True, max_length=50)
@@ -28,14 +28,14 @@ class Category(models.Model):
 
 
 class Post(models.Model):
-    id = models.IntegerField(primary_key=True)
+    id = models.AutoField(primary_key=True)
     authorId = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         null=True,
         related_name="post_created_by"
     )
-    parentId = models.BigIntegerField(max_length=20)
+    parentId = models.BigIntegerField()
     title = models.CharField(max_length=150, blank=False)
     metaTitle = models.CharField(blank=True, max_length=50)
     slug = models.CharField(blank=True, max_length=50)
@@ -55,7 +55,7 @@ class Post(models.Model):
 class Comment(models.Model):
     id = models.IntegerField(primary_key=True)
     postId = models.ForeignKey(Post, on_delete=models.CASCADE, null=True)
-    parentId = models.BigIntegerField(max_length=20)
+    parentId = models.BigIntegerField()
     title = models.CharField(max_length=150, blank=False)
     published = models.BooleanField()
     content = models.TextField()
