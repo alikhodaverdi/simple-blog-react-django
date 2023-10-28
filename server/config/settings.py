@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     'rest_framework',
     'api.apps.ApiConfig',
+    'users.apps.UsersConfig',
 
 ]
 
@@ -53,6 +54,7 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = "config.urls"
+AUTH_USER_MODEL = 'users.CustomUser'
 
 TEMPLATES = [
     {

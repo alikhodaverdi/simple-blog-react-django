@@ -5,7 +5,7 @@ from rest_framework import status
 import io
 from rest_framework.parsers import JSONParser
 from rest_framework.renderers import JSONRenderer
-from django.http.response import HttpResponse
+from django.http.response import HttpResponse ,Http404
 
 from .models import Post, Category, Comment, Tag
 from rest_framework import serializers
@@ -48,8 +48,28 @@ def add_post(request):
     jdata = JSONRenderer().render(serializer.errors)
     return HttpResponse(jdata, content_type='application/json')
 
-
 # get single post
 @api_view(['GET'])
-def get_post_by_id(reques):
-    pass
+def get_posts(request):
+    if request.query_params:
+        posts = Post.objects.filter(**request.query_params.dict())
+    else:
+        posts =Post.objects.all()
+
+    if posts:
+        serializer = PostSerializer(posts,many=True)
+        return Response(serializer.data)
+    else:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['POST'])
+def update_post(request,pk):
+    post =Post.objects.get(pk=pk)
+    data =PostSerializer(instance=post,data=request.data)
+
+    if data.is_valid():
+        data.save()
+        return Response(data.data)
+    else:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
