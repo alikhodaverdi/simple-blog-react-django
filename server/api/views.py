@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
@@ -9,7 +9,7 @@ from django.http.response import HttpResponse ,Http404
 
 from .models import Post, Category, Comment, Tag
 from rest_framework import serializers
-from .serlializers import PostSerializer
+from .serlializers import PostSerializer,CategorySerializer
 # Create your views here.
 
 
@@ -62,6 +62,7 @@ def get_posts(request):
     else:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
+# update post
 @api_view(['POST'])
 def update_post(request,pk):
     post =Post.objects.get(pk=pk)
@@ -72,4 +73,30 @@ def update_post(request,pk):
         return Response(data.data)
     else:
         return Response(status=status.HTTP_404_NOT_FOUND)
+
+
+# delete post
+@api_view(['DELETE'])
+def delete_post(request,pk):
+    post =get_object_or_404(Post,pk=pk)
+    post.delete()
+    return Response(status=status.HTTP_202_ACCEPTED)
+
+
+# create category
+@api_view(['POST'])
+def add_category(request):
+    jdata= request.body
+    stream= io.BytesIO(jdata)
+    pydata= JSONParser().parse(stream)
+    serializer= CategorySerializer(data=pydata)
+    if serializer.is_valid():
+        serializer.save()
+        res= {"msg":"Category is created"}
+        jdata= JSONRenderer().render(res)
+        return HttpResponse(jdata,content_type='application/json')
+    #If not valid
+    jdata =JSONRenderer().render(serializer.errors)
+    return HttpResponse(jdata,content_type='application/json')
+
 

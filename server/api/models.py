@@ -2,6 +2,7 @@ from django.db import models
 
 from django.conf import settings
 # Create your models here.
+from mptt.models import MPTTModel, TreeForeignKey
 
 
 class Tag(models.Model):
@@ -10,21 +11,19 @@ class Tag(models.Model):
     metaTitle = models.CharField(blank=True, max_length=50)
     slug = models.CharField(blank=True, max_length=50)
     content = models.TextField()
-
     def __str__(self):
         return self.title
 
 
-class Category(models.Model):
-    id = models.IntegerField(primary_key=True)
-    parentId = models.BigIntegerField()
+class Category(MPTTModel):
+    id = models.BigIntegerField(primary_key=True, unique=True,null=False)
+    parent = TreeForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='children')
     title = models.CharField(max_length=150, blank=False)
     metaTitle = models.CharField(blank=True, max_length=50)
     slug = models.CharField(blank=True, max_length=50)
     content = models.TextField()
-
-    def __str__(self):
-        return self.title
+    class MPTTMeta:
+        order_insertion_by = ['title']
 
 
 class Post(models.Model):
